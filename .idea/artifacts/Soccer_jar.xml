@@ -1,0 +1,15 @@
+﻿<component name="ArtifactManager">
+  <artifact type="jar" name="Soccer:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/Soccer_jar</output-path>
+    <root id="archive" name="Swimming.jar">
+      <element id="module-output" name="SoccerTracking" />
+      <element id="library" level="project" name="slf4j-api-1.7.29" />
+      <element id="library" level="project" name="gson-2.8.9" />
+      <element id="library" level="project" name="jssc-2.9.4" />
+      <element id="module-source" name="SoccerTracking" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/src/lib/jssc-2.9.4.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/src/lib/gson-2.8.9.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/src/lib/slf4j-api-1.7.29.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
