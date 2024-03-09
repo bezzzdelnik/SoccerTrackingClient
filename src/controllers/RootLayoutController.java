@@ -31,7 +31,7 @@ public class RootLayoutController {
 
     @FXML private TextField reAddress, reCanvas, portField, sceneNameField, vSlotField, logField;
 
-    @FXML private Button startServerButton, stopServerButton;
+    @FXML private Button startServerButton, stopServerButton, loadSceneButton, activateSceneButton, deactivateSceneButton;
 
     private OradController oradConnectionController;
 
@@ -80,7 +80,45 @@ public class RootLayoutController {
             }
         });
 
+        loadSceneButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                loadScene();
+            }
+        });
 
+        activateSceneButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                activateScene();
+            }
+        });
+
+        deactivateSceneButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                deactivateScene();
+            }
+        });
+
+    }
+
+    private void loadScene() {
+        if(controller.isConnected()) {
+            controller.sendLoadScene(sceneNameField.getText());
+        }
+    }
+
+    private void activateScene() {
+        if(controller.isConnected()) {
+            controller.sendActivateScene(sceneNameField.getText(), Integer.parseInt(vSlotField.getText()));
+        }
+    }
+
+    private void deactivateScene() {
+        if(controller.isConnected()) {
+            controller.sendDeactivateSlot(Integer.parseInt(vSlotField.getText()));
+        }
     }
 
     static ExecutorService executeIt = Executors.newFixedThreadPool(2);
@@ -125,7 +163,7 @@ public class RootLayoutController {
                     // в Runnable(при необходимости можно создать Callable)
                     // монопоточную нить = сервер - MonoThreadClientHandler и тот
                     // продолжает общение от лица сервера
-                    executeIt.execute(new MonoThreadClientHandler(client, controller, logField));
+                    executeIt.execute(new MonoThreadClientHandler(client, controller, logField, sceneNameField.getText()));
                     System.out.print("Connection accepted.");
                 }
 

@@ -64,9 +64,9 @@
                                                 <TextField fx:id="vSlotField" maxWidth="400.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
                                                 <HBox spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="7">
                                                     <children>
-                                                        <Button mnemonicParsing="false" text="Load scene" />
-                                                        <Button mnemonicParsing="false" text="Activate cene" />
-                                                        <Button mnemonicParsing="false" text="Deactivate scene" />
+                                                        <Button fx:id="loadSceneButton" mnemonicParsing="false" text="Load scene" />
+                                                        <Button fx:id="activateSceneButton" mnemonicParsing="false" text="Activate cene" />
+                                                        <Button fx:id="deactivateSceneButton" mnemonicParsing="false" text="Deactivate scene" />
                                                     </children>
                                                 </HBox>
                                     <HBox spacing="10.0" GridPane.rowIndex="13">

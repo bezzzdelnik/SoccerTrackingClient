@@ -37,11 +37,13 @@ public class MonoThreadClientHandler implements Runnable {
     PrintWriter fileout = new PrintWriter(bw);
 
     private TextField textField;
+    private String sceneName;
 
-    public MonoThreadClientHandler(Socket client, Retalk2ConnectionController controller, TextField textField) {
+    public MonoThreadClientHandler(Socket client, Retalk2ConnectionController controller, TextField textField, String sceneName) {
         MonoThreadClientHandler.clientDialog = client;
         this.controller = controller;
         this.textField = textField;
+        this.sceneName = sceneName;
         initParticipants();
     }
 
@@ -174,12 +176,16 @@ public class MonoThreadClientHandler implements Runnable {
 
     private void sendParticipants(String data) {
         JsonObject parser = JsonParser.parseString(data).getAsJsonObject();
-        String index = parser.get("index").getAsString();
+        Integer _index = parser.get("index").getAsInt();
+        String index;
+        if ( (_index + 1) < 10) {
+            index = "0" + (_index + 1);
+        } else index = String.valueOf(_index + 1);
         String team = parser.get("team").getAsString();
         String number =parser.get("number").getAsString();
         String name = parser.get("name").getAsString();
-        controller.sendSetExport("soccer", String.format("team%s_player%s_x", team, index), number);
-        controller.sendSetExport("soccer", String.format("team%s_player%s_x", team, index), name);
+        controller.sendSetExport(sceneName, String.format("Geometry_T-0%s-N-0%s_Input_String", team, index), number);
+        controller.sendSetExport(sceneName, String.format("Geometry_T-0%s-P-0%s_Input_String", team, index), name);
         //System.out.println(String.format("index = %s, team = %s, number = %s, name = %s", index, team, number, name));
     }
 
@@ -193,32 +199,36 @@ public class MonoThreadClientHandler implements Runnable {
 
     private void sendCoordinates(String data) {
         JsonObject parser = JsonParser.parseString(data).getAsJsonObject();
-        String index = parser.get("index").getAsString();
+        Integer _index = parser.get("index").getAsInt();
+        String index;
+        if ( (_index + 1) < 10) {
+            index = "0" + (_index + 1);
+        } else index = String.valueOf(_index + 1);
         String team = parser.get("team").getAsString();
         String x = parser.get("x").getAsString();
         String y = parser.get("y").getAsString();
         String z = parser.get("z").getAsString();
         String visible = parser.get("visible").getAsString();
         String user = parser.get("user").getAsString();
-        controller.sendSetExport("soccer", String.format("team%s_player%s_x", team, index), x);
-        controller.sendSetExport("soccer", String.format("team%s_player%s_y", team, index), y);
-        controller.sendSetExport("soccer", String.format("team%s_player%s_z", team, index), z);
+        controller.sendSetExport(sceneName, String.format("Transformation_TEAM-0%s-Player-0%s_Position_X", team, index), x);
+        //controller.sendSetExport(sceneName, String.format("Transformation_TEAM-0%s-Player-0%s_Position_Y", team, index), y);
+        controller.sendSetExport(sceneName, String.format("Transformation_TEAM-0%s-Player-0%s_Position_Z", team, index), z);
         if (team.equals("0")) {
-            if (!visible.equals(participants0[Integer.parseInt(index)])) {
-                controller.sendSetExport("soccer", String.format("team%s_player%s_visible", team, index), visible);
-                participants0[Integer.parseInt(index)] = visible;
+            if (!visible.equals(participants0[_index])) {
+                controller.sendSetExport(sceneName, String.format("Object_TEAM-0%s-Player-0%s_Object_Visible", team, index), visible);
+                participants0[_index] = visible;
             }
         }
         if (team.equals("1")) {
-            if (!visible.equals(participants1[Integer.parseInt(index)])) {
-                controller.sendSetExport("soccer", String.format("team%s_player%s_visible", team, index), visible);
-                participants1[Integer.parseInt(index)] = visible;
+            if (!visible.equals(participants1[_index])) {
+                controller.sendSetExport(sceneName, String.format("Object_TEAM-0%s-Player-0%s_Object_Visible", team, index), visible);
+                participants1[_index] = visible;
             }
         }
         if (team.equals("2")) {
-            if (!visible.equals(participants2[Integer.parseInt(index)])) {
-                controller.sendSetExport("soccer", String.format("team%s_player%s_visible", team, index), visible);
-                participants2[Integer.parseInt(index)] = visible;
+            if (!visible.equals(participants2[_index])) {
+                controller.sendSetExport(sceneName, String.format("Object_TEAM-0%s-Player-0%s_Object_Visible", team, index), visible);
+                participants2[_index] = visible;
             }
         }
         //System.out.println(String.format("index = %s, team = %s, x = %s, y = %s, z = %s, visible = %d, user = %s", index, team, x, y, z, visible, user));
