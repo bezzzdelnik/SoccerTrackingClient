@@ -4,6 +4,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
 import javafx.application.Platform;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import orad.retalk2.Retalk2ConnectionController;
 
@@ -38,12 +40,15 @@ public class MonoThreadClientHandler implements Runnable {
 
     private TextField textField;
     private String sceneName;
+    private TextArea logArea;
+    private Label clientAdress;
 
-    public MonoThreadClientHandler(Socket client, Retalk2ConnectionController controller, TextField textField, String sceneName) {
+    public MonoThreadClientHandler(Socket client, Retalk2ConnectionController controller, TextArea logArea, String sceneName, Label clientAdress) {
         MonoThreadClientHandler.clientDialog = client;
         this.controller = controller;
-        this.textField = textField;
+        this.logArea = logArea;
         this.sceneName = sceneName;
+        this.clientAdress = clientAdress;
         initParticipants();
     }
 
@@ -59,19 +64,64 @@ public class MonoThreadClientHandler implements Runnable {
         }
         return true;
     }
-    public boolean isData(String json) {
+    public String[] getData(String json) {
+        JsonObject parser = JsonParser.parseString(json).getAsJsonObject();
+        String[] data = new String[9];
+        data[0] = "0";
+        data[1] = "";
+        data[2] = "";
+        data[3] = "";
+        data[4] = "";
+        data[5] = "";
+        data[6] = "";
+        data[7] = "";
+        data[8] = "";
         try {
-            int number = JsonParser.parseString(json).getAsJsonObject().get("number").getAsInt();
-            int team = JsonParser.parseString(json).getAsJsonObject().get("number").getAsInt();
-            double x = JsonParser.parseString(json).getAsJsonObject().get("x").getAsDouble();
-            double y = JsonParser.parseString(json).getAsJsonObject().get("y").getAsDouble();
-            double z = JsonParser.parseString(json).getAsJsonObject().get("z").getAsDouble();
-            int visible = JsonParser.parseString(json).getAsJsonObject().get("visible").getAsInt();
-            String user = JsonParser.parseString(json).getAsJsonObject().get("user").getAsString();
+            data[0] = parser.get("index").getAsString();
         } catch (NullPointerException e) {
-            return false;
+            System.out.println(e);
         }
-        return true;
+        try {
+            data[1] = parser.get("team").getAsString();
+        } catch (NullPointerException e) {
+            System.out.println(e);
+        }
+        try {
+            data[2] = parser.get("number").getAsString();
+        } catch (NullPointerException e) {
+            System.out.println(e);
+        }
+        try {
+            data[3] = parser.get("name").getAsString();
+        } catch (NullPointerException e) {
+            System.out.println(e);
+        }
+        try {
+            data[4] = parser.get("x").getAsString();
+        } catch (NullPointerException e) {
+            System.out.println(e);
+        }
+        try {
+            data[5] = parser.get("y").getAsString();
+        } catch (NullPointerException e) {
+            System.out.println(e);
+        }
+        try {
+            data[6] = parser.get("z").getAsString();
+        } catch (NullPointerException e) {
+            System.out.println(e);
+        }
+        try {
+            data[7] = parser.get("visible").getAsString();
+        } catch (NullPointerException e) {
+            System.out.println(e);
+        }
+        try {
+            data[8] = parser.get("user").getAsString();
+        } catch (NullPointerException e) {
+            System.out.println(e);
+        }
+        return data;
     }
 
 
@@ -80,12 +130,13 @@ public class MonoThreadClientHandler implements Runnable {
 
 
         try {
+            new Thread(() -> Platform.runLater(() -> clientAdress.setText("Установлено соединение - " + clientDialog.getInetAddress().getHostAddress()))).start();
             // инициируем каналы общения в сокете, для сервера
 
             // канал записи в сокет следует инициализировать сначала канал чтения для избежания блокировки выполнения программы на ожидании заголовка в сокете
             OutputStream out = clientDialog.getOutputStream();
 
-// канал чтения из сокета
+            // канал чтения из сокета
             InputStream in = clientDialog.getInputStream();
             System.out.println("DataInputStream created");
 
@@ -98,75 +149,73 @@ public class MonoThreadClientHandler implements Runnable {
             // закрыт клиентом
             while (!clientDialog.isClosed()) {
                 //System.out.println("Server reading from channel");
-
                 // серверная нить ждёт в канале чтения (inputstream) получения
                 // данных клиента после получения данных считывает их
                 BufferedReader reader = new BufferedReader(new InputStreamReader(in));
                 BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out));
-                String entry = reader.readLine();    // reads a line of text
-                fileout.println(dateFormat.format(new Date()) + " " + entry);
-                String[] data = entry.split(";");
-
-                for (int i=0; i < data.length; i++) {
-                    String d = data[i].replace(";", "");
-                    //System.out.println(dateFormat.format(new Date()) + " " + d);
-                    new Thread(() -> Platform.runLater(() -> textField.setText(dateFormat.format(new Date()) + " " + d))).start();
-                    writer.flush();
-                    if (isValid(d) && controller.isConnected()) {
-                        sendCoordinates(d);
-                        /*if (d.contains("number")) {
-                            sendParticipants(d);
+                try {
+                    String entry = reader.readLine();    // reads a line of text
+                    if (!entry.isEmpty()) {
+                        fileout.println(dateFormat.format(new Date()) + " " + entry);
+                        String[] data;
+                        if (entry.contains(";")) {
+                            data = entry.split(";");
+                        } else {
+                            data = new String[1];
+                            data[0] = entry;
                         }
-                        if (d.contains("visible")) {
-                            sendCoordinates(d);
-                        }*/
+                        StringBuilder log = new StringBuilder();
+                        for (String splitData : data) {
+                            String d = splitData.replace(";", "");
+                            log.append(d).append("\r\n");
+                            //writer.flush();
+                            if (isValid(d) && controller.isConnected()) {
+                                sendCoordinates(getData(d));
+                            }
+                            if (isValid(d)) {
+                                sendCoordinates(getData(d));
+                            }
+                        }
+                        new Thread(() -> Platform.runLater(() -> logArea.setText(dateFormat.format(new Date()) + "\r\n" + log))).start();
+                        // и выводит в консоль
                     }
-                }
 
+                    // инициализация проверки условия продолжения работы с клиентом
+                    // по этому сокету по кодовому слову - quit в любом регистре
+                    if (entry.equalsIgnoreCase("quit") || entry.equalsIgnoreCase("exit")) {
+                        // если кодовое слово получено то инициализируется закрытие
+                        // серверной нити
+                        System.out.println("Client initialize connections suicide ...");
+                        writer.write("Server reply - " + entry + " - OK");
+                        break;
+                    }
 
-
-                // и выводит в консоль
-
-                // инициализация проверки условия продолжения работы с клиентом
-                // по этому сокету по кодовому слову - quit в любом регистре
-                if (entry.equalsIgnoreCase("quit")) {
-
-                    // если кодовое слово получено то инициализируется закрытие
-                    // серверной нити
-                    System.out.println("Client initialize connections suicide ...");
-
+                    // если условие окончания работы не верно - продолжаем работу -
+                    // отправляем эхо обратно клиенту
+                    //System.out.println("Server try writing to channel");
                     writer.write("Server reply - " + entry + " - OK");
+                    //System.out.println("Server Wrote message to clientDialog.");
+                    // освобождаем буфер сетевых сообщений
+                    writer.flush();
+
+                    // возвращаемся в началло для считывания нового сообщения
+                } catch (IOException ex) {
+                    System.out.println();
                     break;
                 }
-
-                // если условие окончания работы не верно - продолжаем работу -
-                // отправляем эхо обратно клиенту
-
-                //System.out.println("Server try writing to channel");
-                writer.write("Server reply - " + entry + " - OK");
-                //System.out.println("Server Wrote message to clientDialog.");
-
-                // освобождаем буфер сетевых сообщений
-                writer.flush();
-
-                // возвращаемся в началло для считывания нового сообщения
             }
-
             ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // основная рабочая часть //
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
             // если условие выхода - верно выключаем соединения
             System.out.println("Client disconnected");
             System.out.println("Closing connections & channels.");
-
             // закрываем сначала каналы сокета !
             in.close();
             out.close();
-
             // потом закрываем сокет общения с клиентом в нити моносервера
             clientDialog.close();
-
+            new Thread(() -> Platform.runLater(() -> clientAdress.setText("Клиент " + clientDialog.getInetAddress().getHostAddress() + " отключился"))).start();
             System.out.println("Closing connections & channels - DONE.");
         } catch (IllegalStateException e) {
             e.printStackTrace();
@@ -198,21 +247,20 @@ public class MonoThreadClientHandler implements Runnable {
         }
     }
 
-    private void sendCoordinates(String data) {
-        JsonObject parser = JsonParser.parseString(data).getAsJsonObject();
-        Integer _index = parser.get("index").getAsInt();
+    private void sendCoordinates(String[] data) {
+        int _index = Integer.parseInt(data[0]);
         String index;
         if ( (_index + 1) < 10) {
             index = "0" + (_index + 1);
         } else index = String.valueOf(_index + 1);
-        String team = parser.get("team").getAsString();
-        String number =parser.get("number").getAsString();
-        String name = parser.get("name").getAsString();
-        String x = parser.get("x").getAsString();
-        String y = parser.get("y").getAsString();
-        String z = parser.get("z").getAsString();
-        String visible = parser.get("visible").getAsString();
-        String user = parser.get("user").getAsString();
+        String team = data[1];
+        String number = data[2];
+        String name = data[3];
+        String x = data[4];
+        String y = data[5];
+        String z = data[6];
+        String visible = data[7];
+        String user = data[8];
         controller.sendSetExport(sceneName, String.format("Geometry_T-0%s-N-0%s_Input_String", team, index), number);
         controller.sendSetExport(sceneName, String.format("Geometry_T-0%s-P-0%s_Input_String", team, index), name);
         controller.sendSetExport(sceneName, String.format("Transformation_TEAM-0%s-Player-0%s_Position_X", team, index), x);
@@ -236,6 +284,6 @@ public class MonoThreadClientHandler implements Runnable {
                 participants2[_index] = visible;
             }
         }
-        System.out.println(String.format("index = %s, team = %s, x = %s, y = %s, z = %s, visible = %s, user = %s", index, team, x, y, z, visible, user));
+        System.out.println(String.format("index = %s, name = %s, number = %s, team = %s, x = %s, y = %s, z = %s, visible = %s, user = %s", index, name, number, team, x, y, z, visible, user));
     }
 }
