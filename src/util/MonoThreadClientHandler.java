@@ -113,12 +113,13 @@ public class MonoThreadClientHandler implements Runnable {
                     new Thread(() -> Platform.runLater(() -> textField.setText(dateFormat.format(new Date()) + " " + d))).start();
                     writer.flush();
                     if (isValid(d) && controller.isConnected()) {
-                        if (d.contains("number")) {
+                        sendCoordinates(d);
+                        /*if (d.contains("number")) {
                             sendParticipants(d);
                         }
                         if (d.contains("visible")) {
                             sendCoordinates(d);
-                        }
+                        }*/
                     }
                 }
 
@@ -205,11 +206,15 @@ public class MonoThreadClientHandler implements Runnable {
             index = "0" + (_index + 1);
         } else index = String.valueOf(_index + 1);
         String team = parser.get("team").getAsString();
+        String number =parser.get("number").getAsString();
+        String name = parser.get("name").getAsString();
         String x = parser.get("x").getAsString();
         String y = parser.get("y").getAsString();
         String z = parser.get("z").getAsString();
         String visible = parser.get("visible").getAsString();
         String user = parser.get("user").getAsString();
+        controller.sendSetExport(sceneName, String.format("Geometry_T-0%s-N-0%s_Input_String", team, index), number);
+        controller.sendSetExport(sceneName, String.format("Geometry_T-0%s-P-0%s_Input_String", team, index), name);
         controller.sendSetExport(sceneName, String.format("Transformation_TEAM-0%s-Player-0%s_Position_X", team, index), x);
         //controller.sendSetExport(sceneName, String.format("Transformation_TEAM-0%s-Player-0%s_Position_Y", team, index), y);
         controller.sendSetExport(sceneName, String.format("Transformation_TEAM-0%s-Player-0%s_Position_Z", team, index), z);
