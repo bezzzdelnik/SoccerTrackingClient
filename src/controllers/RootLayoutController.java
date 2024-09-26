@@ -10,10 +10,12 @@ import javafx.stage.Stage;
 import orad.retalk2.Retalk2ConnectionController;
 import util.MonoThreadClientHandler;
 
+import javax.xml.soap.Text;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -29,9 +31,13 @@ public class RootLayoutController {
 
     @FXML private AnchorPane oradControllerAnchorPane;
 
-    @FXML private TextField reAddress, reCanvas, portField, sceneNameField, vSlotField, logField;
+    @FXML private TextField reAddress, reCanvas, portField, sceneNameField, vSlotField;
+
+    @FXML private TextArea logArea;
 
     @FXML private Button startServerButton, stopServerButton, loadSceneButton, activateSceneButton, deactivateSceneButton;
+
+    @FXML private Label clientAdress;
 
     private OradController oradConnectionController;
 
@@ -163,7 +169,7 @@ public class RootLayoutController {
                     // в Runnable(при необходимости можно создать Callable)
                     // монопоточную нить = сервер - MonoThreadClientHandler и тот
                     // продолжает общение от лица сервера
-                    executeIt.execute(new MonoThreadClientHandler(client, controller, logField, sceneNameField.getText()));
+                    executeIt.execute(new MonoThreadClientHandler(client, controller, logArea, sceneNameField.getText(), clientAdress));
                     System.out.print("Connection accepted.");
                 }
 
@@ -188,6 +194,7 @@ public class RootLayoutController {
             new Thread(() -> Platform.runLater(() -> {
                 startServerButton.setDisable(false);
                 stopServerButton.setDisable(true);
+                new Thread(() -> Platform.runLater(() -> clientAdress.setText(""))).start();
             })).start();
             try {
                 server.close();
