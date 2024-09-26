@@ -16,9 +16,9 @@ import java.util.Date;
 
 public class MonoThreadClientHandler implements Runnable {
 
-    private String[] participants0 = new String[30];
-    private String[] participants1 = new String[30];
-    private String[] participants2 = new String[30];
+    private String[] participants0 = new String[100];
+    private String[] participants1 = new String[100];
+    private String[] participants2 = new String[100];
 
     private static Socket clientDialog;
     private Retalk2ConnectionController controller;
@@ -109,7 +109,7 @@ public class MonoThreadClientHandler implements Runnable {
 
                 for (int i=0; i < data.length; i++) {
                     String d = data[i].replace(";", "");
-                    System.out.println(dateFormat.format(new Date()) + " " + d);
+                    //System.out.println(dateFormat.format(new Date()) + " " + d);
                     new Thread(() -> Platform.runLater(() -> textField.setText(dateFormat.format(new Date()) + " " + d))).start();
                     writer.flush();
                     if (isValid(d) && controller.isConnected()) {
@@ -187,11 +187,11 @@ public class MonoThreadClientHandler implements Runnable {
         String name = parser.get("name").getAsString();
         controller.sendSetExport(sceneName, String.format("Geometry_T-0%s-N-0%s_Input_String", team, index), number);
         controller.sendSetExport(sceneName, String.format("Geometry_T-0%s-P-0%s_Input_String", team, index), name);
-        //System.out.println(String.format("index = %s, team = %s, number = %s, name = %s", index, team, number, name));
+        System.out.println(String.format("index = %s, team = %s, number = %s, name = %s", index, team, number, name));
     }
 
     private void initParticipants() {
-        for (int i=0; i< 30; i++) {
+        for (int i=0; i< 100; i++) {
             participants0[i] = "0";
             participants1[i] = "0";
             participants2[i] = "0";
@@ -236,6 +236,6 @@ public class MonoThreadClientHandler implements Runnable {
                 participants2[_index] = visible;
             }
         }
-        //System.out.println(String.format("index = %s, team = %s, x = %s, y = %s, z = %s, visible = %d, user = %s", index, team, x, y, z, visible, user));
+        System.out.println(String.format("index = %s, team = %s, x = %s, y = %s, z = %s, visible = %s, user = %s", index, team, x, y, z, visible, user));
     }
 }
