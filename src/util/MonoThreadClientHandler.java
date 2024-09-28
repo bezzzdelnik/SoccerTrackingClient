@@ -172,9 +172,6 @@ public class MonoThreadClientHandler implements Runnable {
                             if (isValid(d) && controller.isConnected()) {
                                 sendCoordinates(getData(d));
                             }
-                            if (isValid(d)) {
-                                sendCoordinates(getData(d));
-                            }
                         }
                         new Thread(() -> Platform.runLater(() -> logArea.setText(dateFormat.format(new Date()) + "\r\n" + log))).start();
                         // и выводит в консоль
