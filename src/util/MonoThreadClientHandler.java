@@ -196,7 +196,7 @@ public class MonoThreadClientHandler implements Runnable {
                     writer.flush();
 
                     // возвращаемся в началло для считывания нового сообщения
-                } catch (IOException ex) {
+                } catch (NullPointerException ex) {
                     System.out.println();
                     break;
                 }
